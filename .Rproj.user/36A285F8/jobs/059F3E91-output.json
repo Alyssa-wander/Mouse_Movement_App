@@ -1,0 +1,6 @@
+[1,"Installing 'shinybusy' ...\n"]
+[2,"trying URL 'https://cran.rstudio.com/bin/macosx/big-sur-arm64/contrib/4.4/shinybusy_0.3.3.tgz'\n"]
+[2,"Content type 'application/x-gzip' length 607056 bytes (592 KB)\n============================"]
+[1,"The downloaded binary packages are in\n"]
+[1,"\t/var/folders/w5/bx_qwkd944q464jmkhkv5fmm0000gn/T//RtmpCzjbZw/downloaded_packages\n"]
+[2,"======================\ndownloaded 592 KB\n\n\n\n✔ Package 'shinybusy' successfully installed.\n"]

@@ -1,0 +1,21 @@
+{
+    "debugBreakpointsState": {
+        "breakpoints": [
+            {
+                "id": 0,
+                "path": "~/Desktop/R/mouse_movement/DLCAnalyzer_Functions_final.R",
+                "line_number": 3589,
+                "function_steps": "",
+                "function_name": "generate_boxplots_pdf",
+                "state": 2,
+                "editor_state": 2,
+                "editor_line_number": 3589,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": true,
+                "type": 0,
+                "is_package_breakpoint": false,
+                "package_name": ""
+            }
+        ]
+    }
+}

@@ -1,0 +1,126 @@
+library(sp)
+library(ggplot2)
+library(dplyr)
+TrackingAll <- readRDS("TrackingAll.rds")
+source('DLCAnalyzer_Functions_final.R')
+
+rainbow_colors <- c(
+  "#F09EA7", "#F6CA94", "#FAFABE",
+  "#C1EDC0", "#C7CAFF", "#CDABEB", "#F6C2F3"
+)
+
+source('DLCAnalyzer_Functions_final.R')
+groupName <- list("Group 1", "Group 2", "Group 3")
+n_groups <- 3
+zone_list <- setNames(vector("list", n_groups), groupName)
+for (i in 1:n_groups) {
+  zone_list[[groupName[[i]]]] <- plot_time_in_zones(TrackingAll, groupName[[3]], colors = rainbow_colors)
+}
+
+summary(TrackingAll[[1]])
+summary(TrackingAll[[1]]$data$Head)
+class(TrackingAll[[1]]$zones)
+TrackingAll[[1]]$zones$arena
+length(TrackingAll[[1]]$seconds)
+summary(TrackingAll[[1]]$seconds)
+sum(TrackingAll[[1]]$seconds)
+length(TrackingAll[[1]]$seconds)
+print(zone_list[[3]])
+print(length(TrackingAll[[3]]))
+
+plot_time_in_zones <- function(TrackingAll, groupName, pts = "Head") {
+
+  plots <- list()  # Initialize output list of plots
+  
+  for (i in seq_along(TrackingAll)) {
+    track <- TrackingAll[[i]]  # Get current subject
+    
+    # 1. Validate required data
+    if (!IsTrackingData(track)) {
+      warning(paste("Entry", i, "is not valid TrackingData"))
+      next
+    }
+    
+    if (is.null(track$zones) || is.null(track$data$Head) || is.null(track$seconds)) {
+      warning(paste("Missing data in entry", i))
+      next
+    }
+    
+    n_frames <- length(track$seconds)
+    full_df <- data.frame()
+    
+    for (pt in pts) {
+      pt_data <- track$data[[pt]]
+      if (!is.data.frame(pt_data) || !all(c("x", "y") %in% names(pt_data))) {
+        warning(paste("Invalid point:", pt, "in entry", i))
+        next
+      }
+      
+      zone_labels <- rep(NA_character_, n_frames)  # Empty vector to store zone assignments
+      for (z_name in names(track$zones)) {
+        zone_df <- track$zones[[z_name]]  # Get coordinates of the zone
+        if (!all(c("x", "y") %in% names(zone_df))) {
+          warning(paste("Invalid zone format in", z_name, "entry", i))
+          next
+        }
+        inside <- point.in.polygon(
+          pt_data$x, pt_data$y,  # Track points
+          zone_df$x, zone_df$y           # Zone polygon
+        )
+        zone_labels[inside > 0] <- z_name  # Label frames that are inside
+      }
+      # 4. Create data frame for ggplot input
+      df <- data.frame(
+        Time_begin = track$seconds,
+        Time_end = lead(track$seconds),
+        Zone = factor(zone_labels, levels = names(track$zones)),
+        Point = pt
+      )
+      
+      full_df <- rbind(full_df, df)
+    }
+    
+    full_df <- full_df[!is.na(df$Zone), ]  # Keep only points that fall into some zone
+    full_df$Zone <- factor(full_df$Zone, levels = names(track$zones))
+    
+    # compute percentage time per zone
+    zone_time <- full_df |>
+      dplyr::mutate(duration = Time_end - Time_begin) |>
+      dplyr::group_by(Zone) |>
+      dplyr::summarise(total = sum(duration)) |>
+      dplyr::mutate(percent = total / sum(total) * 100)
+    
+    # create new zone labels: "zone (xx.x%)"
+    zone_label_map <- zone_time |>
+      dplyr::mutate(
+        label = sprintf("%s (%.1f%%)", Zone, percent)
+      ) |>
+      dplyr::select(Zone, label)
+    full_df$Zone <- factor(full_df$Zone, levels = zone_label_map$Zone)
+    zone_labels_final <- setNames(zone_label_map$label, zone_label_map$Zone)
+
+    # 5. Generate and store plot
+    p <- ggplot(na.omit(full_df), aes(x = Time_begin, xend = Time_end, y = Zone, color = Zone)) +
+      geom_segment(size = 7) +
+      facet_wrap(~Point, ncol = 1) +
+      scale_color_manual(values = rainbow_colors) +
+      theme_minimal() + 
+      labs(
+        title = paste(groupName, "-", i),
+        x = "Time (seconds)",
+        y = "Zone"
+      ) +
+      theme(plot.title = element_text(hjust = 0.5),
+            axis.line = element_line(color = "black"),
+            axis.ticks = element_line(color = "black"),
+            axis.text = element_text(color = "black"),
+            axis.title = element_text(color = "black")
+      )
+    
+    plots[[i]] <- p
+      
+    
+  }
+  
+  return(plots)
+}
