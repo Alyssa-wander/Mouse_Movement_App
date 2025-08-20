@@ -1,3 +1,14 @@
+# RStudio junk
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# System junk
+.DS_Store
+
+# Large videos
 *.mp4
 *.mov
+*.avi
 *.mkv
