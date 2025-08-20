@@ -1,14 +1,16 @@
-# RStudio junk
-.Rproj.user/
+# R temp files
 .Rhistory
 .RData
-.Ruserdata
+.RDataTmp
+.Rproj.user/
 
-# System junk
+# Jupyter temp
+.ipynb_checkpoints/
+
+# macOS system files
 .DS_Store
 
-# Large videos
-*.mp4
-*.mov
-*.avi
-*.mkv
+# MS Office autosave
+~$*.docx
+~$*.xlsx
+~$*.pptx
